@@ -1,4 +1,4 @@
-neil-wu.github.io
-=================
+ad1988
+================
 
-neil-wu.github.io
+Personal Blog powered by Jekyll&amp;Gitpage! http://www.ad1988.com
