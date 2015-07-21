@@ -1,6 +1,14 @@
 [
 	
 		{
+		  "title"      : "使用xib来自定义UITableViewCell (Swift项目)",
+		  "category"   : "",
+		  "url"        : "/tech/xib-table-view-cell",
+		  "date"       : "2015-07-21 00:00:00 +0800",
+		  "shortdate"  : "July 21, 2015"
+		} ,
+	
+		{
 		  "title"      : "博客开张",
 		  "category"   : "",
 		  "url"        : "/personal/first-commit",

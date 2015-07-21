@@ -177,6 +177,46 @@ Description: Awesome dude, awesome life
 	        <div class="row">
 	            <article class="post post col-md-8 col-md-offset-2">
 	               <header class="post-header">
+	               
+	                    
+	                    <h2 class="post-title text-center super lighter bordered-bottom">
+	                        <a href="/tech/xib-table-view-cell">使用xib来自定义UITableViewCell (Swift项目)</a>
+	                    
+	                    </h2>
+	                    <div class="post-info text-center small">
+	                        <time datetime="2015-07-21T00:00:00+08:00" class="post-time">2015-07-21</time>发布
+	                        。分类：<span class="post-tags"><a href="/categories/index.html#tech" data-toggle="tooltip" title="Other posts from the Tech category" rel="tag">Tech</a></span>&nbsp;<span class="post-tags"><i class="icon-time"></i>&nbsp;1 minute read</span>
+	                    </div>
+	                </header>
+	                <div class="post-body bordered-bottom">
+	                
+	                
+	                    <p>之前在使用UITableView时，总是在Storeboard里直接把property cell放到相应ViewController的Table里。如果一个cell需要在其他ViewController里进行复用，我们可以直接在IB里进行复制，粘贴，这样虽然比较简单，但以后项目维护过程中，某个cell发生了改变，要重复该操作，且不能遗漏修改。可以在xib中设计cell来进行复用。 操作步骤： 1. 新建一个empty xib文件 File -&gt; New File -&gt; User Interface -&gt; Empty 这里记得选用 Empty 来创建一个空的xib文件。 2. 在IB中设计cell 打开刚才新建的xib文件（这里暂时命名为CellUI），拖入一个Table View Cell，自定义其size，然后根据需要设计该cell。 这个cell就是我们的自定义cell了。 3. 使用cell 我们可以新建一个继承与UITableViewcell的类(TabLocationTableCell),将cell中的文本等元素与其关联。 在TableView的delegate里，我们自定义个resueID，修改cellForRowAtIndexPath override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&gt; UITableViewCell { var cell: AnyObject? = self.tableView.dequeueReusableCellWithIdentifier(self.resueCellID) //1 if nil == cell { let viewList = NSBundle.mainBundle().loadNibNamed("CellUI", owner: self, options: nil) //2 for obj in viewList { if obj is TabLocationTableCell { cell = obj as? TabLocationTableCell //3 break } } } if let cell = cell as? TabLocationTableCell { cell.nameTxt.text = self.jsonDataList![indexPath.row]["GrpName"].stringValue //4 return cell } println("never goes here") //5 return UITableViewCell() }...&hellip;</p>
+	                    <div class="text-center">
+	                    
+		                <a href="/tech/xib-table-view-cell" data-toggle="tooltip" title="" class="more-link btn btn-danger btn-large">
+		                    <i class="icon-link"></i> 阅读全文
+		                </a>
+		                
+		                </div>
+	                </div>
+	            </article>
+	        </div>
+			
+	
+		
+		
+		
+		
+		
+			
+	        
+	        
+	        
+	        
+	        <div class="row">
+	            <article class="post post col-md-8 col-md-offset-2">
+	               <header class="post-header">
 	               <div class="cursive">this post is featured</div>
 	                    
 	                    <h2 class="post-title text-center super lighter bordered-bottom">

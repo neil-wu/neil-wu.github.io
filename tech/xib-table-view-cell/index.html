@@ -17,23 +17,23 @@ Description: Awesome dude, awesome life
 -->
 <head>
 <meta charset="utf-8">
-<title>Featured Posts &#8211; neilwu</title>
-<meta name="description" content="An archive of posts sorted by date.">
-
+<title>使用xib来自定义UITableViewCell (Swift项目) &#8211; neilwu</title>
+<meta name="description" content="">
+<meta name="keywords" content="技术, 前端, iOS">
 
 <!-- Twitter Cards -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="/images/neilwu.jpg"  itemprop="image" class="post-avatar img-circle img-responsive" >
-<meta name="twitter:title" content="Featured Posts">
-<meta name="twitter:description" content="An archive of posts sorted by date.">
+<meta name="twitter:title" content="使用xib来自定义UITableViewCell (Swift项目)">
+<meta name="twitter:description" content="">
 <meta name="twitter:creator" content="@neil_wu">
 
 <!-- Open Graph -->
 <meta property="og:locale" content="en_US">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Featured Posts">
-<meta property="og:description" content="An archive of posts sorted by date.">
-<meta property="og:url" content="/featured/">
+<meta property="og:title" content="使用xib来自定义UITableViewCell (Swift项目)">
+<meta property="og:description" content="">
+<meta property="og:url" content="/tech/xib-table-view-cell">
 <meta property="og:site_name" content="neilwu">
 <meta property="og:image" content="/images/default_bg1.jpg">
 
@@ -41,7 +41,7 @@ Description: Awesome dude, awesome life
 
 
 
-<link rel="canonical" href="/featured/">
+<link rel="canonical" href="/tech/xib-table-view-cell">
 <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="neilwu  RSS">
 
 
@@ -80,7 +80,7 @@ Description: Awesome dude, awesome life
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/images/apple-touch-icon-144x144-precomposed.png">
 
 </head>
-<body class="home-template" itemscope itemtype="http://schema.org/WebPage">
+<body class="post-template" itemscope itemtype="http://schema.org/WebPage">  
 <div id="fade"></div>
 <a id="slide" class="animated fade"></a>
 <aside id="sidebar">
@@ -120,7 +120,7 @@ Description: Awesome dude, awesome life
 
     <div class="inner">
         <div class="container">
-            <a class="brand" href="" role="banner" itemprop="url">
+            <a class="brand light" href="" role="banner" itemprop="url">
 
                 <img itemprop="logo" src="/images/neilwu.jpg" alt="neilwu Logo" class="post-avatar img-circle img-responsive" />
 
@@ -129,6 +129,9 @@ Description: Awesome dude, awesome life
             </h1>
                 
             </a>
+            <h2 class="blog-description light bordered bordered-top" itemprop="description">
+                
+            </h2>
         </div>
     </div>
     
@@ -152,25 +155,156 @@ Description: Awesome dude, awesome life
     </div>
     
 </header>
-<div id="main" class="content" role="main" itemprop="mainContentOfPage">
+<div id="main" class="content" role="main" itemprop="mainContentOfPage" itemscope itemtype="http://schema.org/Blog">
     <div class="container">
         <div class="row">
-            <div class="page-body col-md-10 col-md-offset-1" itemprop="description">
-                <ul class="post-list">
+            <article class="post col-md-8 col-md-offset-2 hentry" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+            
+            
+            
+            
+            
+                    <header class="post-header entry-header">
+                    
+                        
+                        <h1 class="post-title text-center hyper lighter bordered-bottom entry-title" itemprop="headline">使用xib来自定义UITableViewCell (Swift项目)</h1>
+                        
+                        <div class="cursive" style="color: #000; font-style:italic;"></div>
+                        <div class="post-info text-center small">
+                            
+                            <span class="entry-date date published updated">
+                            
+                            <time datetime="2015-07-21T00:00:00+08:00" class="post-time" itemprop="datePublished">2015-07-21</time>发布<span>
+                            
+                             。分类：<span class="post-tags">
+                             <a href="/categories/index.html#tech" data-toggle="tooltip" title="Tech 分类下的其他文章" rel="tag">Tech</a></span>&nbsp;<span class="post-tags"><i class="icon-time"></i>&nbsp;1 minute read</span>
+                        </div>
+                    </header>
+                    <div class="post-body bordered-bottom" itemprop="description">
+                        
+                        <p>之前在使用UITableView时，总是在Storeboard里直接把property cell放到相应ViewController的Table里。如果一个cell需要在其他ViewController里进行复用，我们可以直接在IB里进行复制，粘贴，这样虽然比较简单，但以后项目维护过程中，某个cell发生了改变，要重复该操作，且不能遗漏修改。可以在xib中设计cell来进行复用。</p>
+
+<p>操作步骤：</p>
+
+<h3 id="empty-xib">1. 新建一个empty xib文件</h3>
+<p>File -&gt; New File -&gt; User Interface -&gt; <code>Empty</code></p>
+
+<p>这里记得选用 Empty 来创建一个空的xib文件。</p>
+
+<h3 id="ibcell">2. 在IB中设计cell</h3>
+<p>打开刚才新建的xib文件（这里暂时命名为CellUI），拖入一个<code>Table View Cell</code>，自定义其size，然后根据需要设计该cell。</p>
+
+<p>这个cell就是我们的自定义cell了。</p>
+
+<h3 id="cell">3. 使用cell</h3>
+<p>我们可以新建一个继承与UITableViewcell的类(TabLocationTableCell),将cell中的文本等元素与其关联。</p>
+
+<p>在TableView的delegate里，我们自定义个resueID，修改cellForRowAtIndexPath</p>
+
+<pre><code>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&gt; UITableViewCell {
+    var cell: AnyObject? = self.tableView.dequeueReusableCellWithIdentifier(self.resueCellID) //1
+    if nil == cell {
+        let viewList = NSBundle.mainBundle().loadNibNamed("CellUI", owner: self, options: nil) //2
+        for obj in viewList {
+            if obj is TabLocationTableCell {
+                cell = obj as? TabLocationTableCell //3
+                break
+            }
+        }
+    }
+
+    if let cell = cell as? TabLocationTableCell {
+        cell.nameTxt.text = self.jsonDataList![indexPath.row]["GrpName"].stringValue //4
+        return cell
+    }
+
+    println("never goes here") //5
+    return UITableViewCell()
+}
+</code></pre>
+
+<p>代码说明：</p>
+
+<ol>
+  <li>使用 <code>func dequeueReusableCellWithIdentifier(_ identifier: String) -&gt; AnyObject?</code> 来获取一个可用的cell。注意这里没有传入 <code>indexPath</code></li>
+  <li>如果没有可复用的cell，则加载xib，生成一个该cell</li>
+  <li>一个xib中可以放入多个view，从中找到我们需要的cell</li>
+  <li>可以对改cell内容进行赋值</li>
+  <li>程序应该永远运行不到这里，如果出现此信息，重新检查你的代码</li>
+</ol>
+
+<p><strong>补充：</strong>
+采用这种方法时，不需要调用 <code>self.tableView.registerClass</code>。</p>
+
+<p>以前在storyboard里直接设计cell时，我们都会使用<code>dequeueReusableCellWithIdentifier:forIndexPath:</code> 来获取可复用的cell，该方法才需要提前registerClass （IB里可以指定ID，会自动帮我们做）。否则，会收到错误：</p>
+
+<p>Terminating app due to uncaught exception ‘NSInternalInconsistencyException’, reason: ‘unable to dequeue a cell with identifier locationCell - must register a nib or a class for the identifier or connect a prototype cell in a storyboard’</p>
+
+<p>(完)</p>
 
 
-
-
-  <li><article><i class="icon-star-half-empty"></i> <a href="/personal/first-commit">博客开张 <span class="entry-date"><time datetime="2015-07-19T00:00:00+08:00">2015-07-19</time></span></a></article></li>
-
-
-</ul>
-
-            </div>    
+                        <br>
+                    
+                    
+                    <div class="entry-tags text-center">
+                    
+                        <i class="icon-tags"></i>&nbsp;标签： <a href="/tags/index.html#技术" data-toggle="tooltip" title="文章标签 技术" rel="tag">技术</a>&nbsp;&bull;&nbsp;<a href="/tags/index.html#前端" data-toggle="tooltip" title="文章标签 前端" rel="tag">前端</a>&nbsp;&bull;&nbsp;<a href="/tags/index.html#iOS" data-toggle="tooltip" title="文章标签 iOS" rel="tag">iOS</a>
+                    
+                    </div>
+                    
+                    </div>
         </div>
+                    <footer class="post-footer entry-meta">
+                        <div class="post-share text-center">
+    <p class="light small">
+        分享此文
+    </p>
+    <ul class="social-mini">
+        <li>
+            <a href="https://twitter.com/intent/tweet?text=&quot;使用xib来自定义UITableViewCell (Swift项目)&quot;%20/tech/xib-table-view-cell%20via%20&#64;neil_wu"
+            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" data-toggle="tooltip" title="分享到 Twitter" itemprop="Twitter">
+                <i class="icon-twitter"></i>
+            </a>
+        </li>
+        <li>
+            <a  href="https://www.facebook.com/sharer/sharer.php?u=/tech/xib-table-view-cell"
+            onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;" data-toggle="tooltip" title="分享到 Facebook" itemprop="Facebook">
+                <i class="icon-facebook"></i>
+            </a>
+        </li>
+        <li>
+            <a href="https://plus.google.com/share?url=/tech/xib-table-view-cell"
+           onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;" data-toggle="tooltip" title="分享到 Google plus" itemprop="GooglePlus">
+                <i class="icon-google-plus"></i>
+            </a>
+        </li>
+        <li>
+            <a href="http://service.weibo.com/share/share.php?title=使用xib来自定义UITableViewCell (Swift项目)&url=/tech/xib-table-view-cell&source=bookmark&appkey=2992571369&pic=&ralateUid="
+           onclick="window.open(this.href, 'weibo-share', 'width=490,height=530');return false;" data-toggle="tooltip" title="分享到微博" itemprop="Weibo">
+                <i class="icon-weibo"></i>
+            </a>
+        </li>
+        <li>
+            <a href="http://widget.renren.com/dialog/share?resourceUrl=/tech/xib-table-view-cell&srcUrl=/tech/xib-table-view-cell&title=使用xib来自定义UITableViewCell (Swift项目)&pic=&description="
+           onclick="window.open(this.href, 'renren-share', 'width=490,height=530');return false;" data-toggle="tooltip" title="分享到人人网" itemprop="renren">
+                <i class="icon-renren"></i>
+            </a>
+        </li>
+        
+        
+    </ul>
+</div>
+                        <div class="post-author text-center">                       
+	        <img src="/images/neilwu.jpg" alt="neilwu's photo" itemprop="image" class="post-avatar img-circle img-responsive"/>    
+	    <h4 class="bordered-bottom vcard author" itemprop="author" itemscope itemtype="http://schema.org/Person">By <span itemprop="name" class="fn"><a href="/about" title="About neilwu" itemprop="url">neilwu</a></span></h4>
+	    <p>欢迎交流</p>
+</div> 
+                        <div id="disqus_thread"></div><!-- /#disqus_thread -->
+                    </footer>
+            </article>
     </div>
 </div>
-    
+
 <footer id="footer"  class="blog-background overlay text-center align-middle animated from-top" style="background-image: url(/images/default_bg1.jpg)" >
 
 
@@ -257,6 +391,7 @@ Description: Awesome dude, awesome life
     
 </footer>
 
+    
 <script src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
 <script src="/assets/js/scripts.min.js"></script>
@@ -330,8 +465,41 @@ $("a#click-pages").click(function(){
 </script>
 
 
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'neilwu123'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
 
-  
+<!-- UY BEGIN -->
+<!-- script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1974030"></script-->
+<!-- UY END -->
+
+
+
+
+
+
+
+
+
+
+ 
 </body>
 </html>
