@@ -2,25 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
      
     <url>
-        <loc>/</loc>
+        <loc>http://www.ad1988.com/</loc>
     </url> 
     <url>
-        <loc>/categories</loc>
+        <loc>http://www.ad1988.com/categories</loc>
     </url> 
     <url>
-        <loc>/tags</loc>
+        <loc>http://www.ad1988.com/tags</loc>
     </url> 
     <url>
-        <loc>/neilwu</loc>
+        <loc>http://www.ad1988.com/neilwu</loc>
     </url>
     
     
     <url>
-        <loc>/tech/xib-table-view-cell</loc>
+        <loc>http://www.ad1988.com/tech/xib-table-view-cell</loc>
     </url>
     
     <url>
-        <loc>/personal/first-commit</loc>
+        <loc>http://www.ad1988.com/personal/first-commit</loc>
     </url>
     
 </urlset>

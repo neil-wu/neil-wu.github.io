@@ -2,26 +2,26 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
 <title type="text">neilwu</title>
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
-<link rel="self" type="application/atom+xml" href="/feed.xml" />
-<link rel="alternate" type="text/html" href="" />
-<updated>2015-07-25T17:30:29+08:00</updated>
-<id>/</id>
+<link rel="self" type="application/atom+xml" href="http://www.ad1988.com/feed.xml" />
+<link rel="alternate" type="text/html" href="http://www.ad1988.com" />
+<updated>2015-07-25T17:36:27+08:00</updated>
+<id>http://www.ad1988.com/</id>
 <author>
   <name>neilwu</name>
-  <uri>/</uri>
+  <uri>http://www.ad1988.com/</uri>
   <email>neilwu@opznet.com</email>
 </author>
 
 
 <entry>
   <title type="html"><![CDATA[使用xib来自定义UITableViewCell (Swift项目)]]></title>
-  <link>/tech/xib-table-view-cell</link>
-  <id>/tech/xib-table-view-cell</id>
+  <link>http://www.ad1988.com/tech/xib-table-view-cell</link>
+  <id>http://www.ad1988.com/tech/xib-table-view-cell</id>
   <published>2015-07-21T00:00:00+08:00</published>
   <updated>2015-07-21T00:00:00+08:00</updated>
   <author>
     <name>neilwu</name>
-    <uri></uri>
+    <uri>http://www.ad1988.com</uri>
     <email>neilwu@opznet.com</email>
   </author>
   <content type="html">&lt;p&gt;之前在使用UITableView时，总是在Storeboard里直接把property cell放到相应ViewController的Table里。如果一个cell需要在其他ViewController里进行复用，我们可以直接在IB里进行复制，粘贴，这样虽然比较简单，但以后项目维护过程中，某个cell发生了改变，要重复该操作，且不能遗漏修改。可以在xib中设计cell来进行复用。&lt;/p&gt;
@@ -85,19 +85,19 @@
 &lt;p&gt;(完)&lt;/p&gt;
 
 
-  &lt;p&gt;&lt;a href=&quot;/tech/xib-table-view-cell&quot;&gt;使用xib来自定义UITableViewCell (Swift项目)&lt;/a&gt; was originally published by neilwu at &lt;a href=&quot;&quot;&gt;neilwu&lt;/a&gt; on July 21, 2015.&lt;/p&gt;</content>
+  &lt;p&gt;&lt;a href=&quot;http://www.ad1988.com/tech/xib-table-view-cell&quot;&gt;使用xib来自定义UITableViewCell (Swift项目)&lt;/a&gt; was originally published by neilwu at &lt;a href=&quot;http://www.ad1988.com&quot;&gt;neilwu&lt;/a&gt; on July 21, 2015.&lt;/p&gt;</content>
 </entry>
 
 
 <entry>
   <title type="html"><![CDATA[博客开张]]></title>
-  <link>/personal/first-commit</link>
-  <id>/personal/first-commit</id>
+  <link>http://www.ad1988.com/personal/first-commit</link>
+  <id>http://www.ad1988.com/personal/first-commit</id>
   <published>2015-07-19T00:00:00+08:00</published>
   <updated>2015-07-19T00:00:00+08:00</updated>
   <author>
     <name>neilwu</name>
-    <uri></uri>
+    <uri>http://www.ad1988.com</uri>
     <email>neilwu@opznet.com</email>
   </author>
   <content type="html">&lt;blockquote&gt;
@@ -107,7 +107,7 @@
 
 &lt;p&gt;多谢&lt;a href=&quot;http://www.hossainmohdfaysal.com/&quot;&gt;hmfaysal&lt;/a&gt;的Jekyll theme，自己改了一下，终于开张啦。&lt;/p&gt;
 
-  &lt;p&gt;&lt;a href=&quot;/personal/first-commit&quot;&gt;博客开张&lt;/a&gt; was originally published by neilwu at &lt;a href=&quot;&quot;&gt;neilwu&lt;/a&gt; on July 19, 2015.&lt;/p&gt;</content>
+  &lt;p&gt;&lt;a href=&quot;http://www.ad1988.com/personal/first-commit&quot;&gt;博客开张&lt;/a&gt; was originally published by neilwu at &lt;a href=&quot;http://www.ad1988.com&quot;&gt;neilwu&lt;/a&gt; on July 19, 2015.&lt;/p&gt;</content>
 </entry>
 
 </feed>

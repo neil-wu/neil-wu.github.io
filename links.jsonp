@@ -2,12 +2,12 @@ callback([
 
   {
     "text": "博客开张",
-    "href": "/personal/first-commit"
+    "href": "http://www.ad1988.com/personal/first-commit"
   } ,
 
   {
     "text": "使用xib来自定义UITableViewCell (Swift项目)",
-    "href": "/tech/xib-table-view-cell"
+    "href": "http://www.ad1988.com/tech/xib-table-view-cell"
   } 
 
 ])
