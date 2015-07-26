@@ -1,113 +1,36 @@
+---
+layout: none
+---
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
-<title type="text">neilwu</title>
+<title type="text">{{ site.title }}</title>
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
-<link rel="self" type="application/atom+xml" href="http://www.ad1988.com/feed.xml" />
-<link rel="alternate" type="text/html" href="http://www.ad1988.com" />
-<updated>2015-07-25T17:36:27+08:00</updated>
-<id>http://www.ad1988.com/</id>
+<link rel="self" type="application/atom+xml" href="{{ site.url }}/feed.xml" />
+<link rel="alternate" type="text/html" href="{{ site.url }}" />
+<updated>{{ site.time | date_to_xmlschema }}</updated>
+<id>{{ site.url }}/</id>
 <author>
-  <name>neilwu</name>
-  <uri>http://www.ad1988.com/</uri>
-  <email>neilwu@opznet.com</email>
+  <name>{{ site.owner.name }}</name>
+  <uri>{{ site.url }}/</uri>
+  <email>{{ site.owner.email }}</email>
 </author>
-
-
-<entry>
-  <title type="html"><![CDATA[使用xib来自定义UITableViewCell (Swift项目)]]></title>
-  <link>http://www.ad1988.com/tech/xib-table-view-cell</link>
-  <id>http://www.ad1988.com/tech/xib-table-view-cell</id>
-  <published>2015-07-21T00:00:00+08:00</published>
-  <updated>2015-07-21T00:00:00+08:00</updated>
-  <author>
-    <name>neilwu</name>
-    <uri>http://www.ad1988.com</uri>
-    <email>neilwu@opznet.com</email>
-  </author>
-  <content type="html">&lt;p&gt;之前在使用UITableView时，总是在Storeboard里直接把property cell放到相应ViewController的Table里。如果一个cell需要在其他ViewController里进行复用，我们可以直接在IB里进行复制，粘贴，这样虽然比较简单，但以后项目维护过程中，某个cell发生了改变，要重复该操作，且不能遗漏修改。可以在xib中设计cell来进行复用。&lt;/p&gt;
-
-&lt;p&gt;操作步骤：&lt;/p&gt;
-
-&lt;h3 id=&quot;empty-xib&quot;&gt;1. 新建一个empty xib文件&lt;/h3&gt;
-&lt;p&gt;File -&amp;gt; New File -&amp;gt; User Interface -&amp;gt; &lt;code&gt;Empty&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;这里记得选用 Empty 来创建一个空的xib文件。&lt;/p&gt;
-
-&lt;h3 id=&quot;ibcell&quot;&gt;2. 在IB中设计cell&lt;/h3&gt;
-&lt;p&gt;打开刚才新建的xib文件（这里暂时命名为CellUI），拖入一个&lt;code&gt;Table View Cell&lt;/code&gt;，自定义其size，然后根据需要设计该cell。&lt;/p&gt;
-
-&lt;p&gt;这个cell就是我们的自定义cell了。&lt;/p&gt;
-
-&lt;h3 id=&quot;cell&quot;&gt;3. 使用cell&lt;/h3&gt;
-&lt;p&gt;我们可以新建一个继承与UITableViewcell的类(TabLocationTableCell),将cell中的文本等元素与其关联。&lt;/p&gt;
-
-&lt;p&gt;在TableView的delegate里，我们自定义个resueID，修改cellForRowAtIndexPath&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&amp;gt; UITableViewCell {
-    var cell: AnyObject? = self.tableView.dequeueReusableCellWithIdentifier(self.resueCellID) //1
-    if nil == cell {
-        let viewList = NSBundle.mainBundle().loadNibNamed(&quot;CellUI&quot;, owner: self, options: nil) //2
-        for obj in viewList {
-            if obj is TabLocationTableCell {
-                cell = obj as? TabLocationTableCell //3
-                break
-            }
-        }
-    }
-
-    if let cell = cell as? TabLocationTableCell {
-        cell.nameTxt.text = self.jsonDataList![indexPath.row][&quot;GrpName&quot;].stringValue //4
-        return cell
-    }
-
-    println(&quot;never goes here&quot;) //5
-    return UITableViewCell()
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;代码说明：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;使用 &lt;code&gt;func dequeueReusableCellWithIdentifier(_ identifier: String) -&amp;gt; AnyObject?&lt;/code&gt; 来获取一个可用的cell。注意这里没有传入 &lt;code&gt;indexPath&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;如果没有可复用的cell，则加载xib，生成一个该cell&lt;/li&gt;
-  &lt;li&gt;一个xib中可以放入多个view，从中找到我们需要的cell&lt;/li&gt;
-  &lt;li&gt;可以对改cell内容进行赋值&lt;/li&gt;
-  &lt;li&gt;程序应该永远运行不到这里，如果出现此信息，重新检查你的代码&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;补充：&lt;/strong&gt;
-采用这种方法时，不需要调用 &lt;code&gt;self.tableView.registerClass&lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;以前在storyboard里直接设计cell时，我们都会使用&lt;code&gt;dequeueReusableCellWithIdentifier:forIndexPath:&lt;/code&gt; 来获取可复用的cell，该方法才需要提前registerClass （IB里可以指定ID，会自动帮我们做）。否则，会收到错误：&lt;/p&gt;
-
-&lt;p&gt;Terminating app due to uncaught exception ‘NSInternalInconsistencyException’, reason: ‘unable to dequeue a cell with identifier locationCell - must register a nib or a class for the identifier or connect a prototype cell in a storyboard’&lt;/p&gt;
-
-&lt;p&gt;(完)&lt;/p&gt;
-
-
-  &lt;p&gt;&lt;a href=&quot;http://www.ad1988.com/tech/xib-table-view-cell&quot;&gt;使用xib来自定义UITableViewCell (Swift项目)&lt;/a&gt; was originally published by neilwu at &lt;a href=&quot;http://www.ad1988.com&quot;&gt;neilwu&lt;/a&gt; on July 21, 2015.&lt;/p&gt;</content>
-</entry>
-
+{% for post in site.posts limit:20 %}
 
 <entry>
-  <title type="html"><![CDATA[博客开张]]></title>
-  <link>http://www.ad1988.com/personal/first-commit</link>
-  <id>http://www.ad1988.com/personal/first-commit</id>
-  <published>2015-07-19T00:00:00+08:00</published>
-  <updated>2015-07-19T00:00:00+08:00</updated>
+  <title type="html"><![CDATA[{{ post.title | cdata_escape }}]]></title>
+  <link>{% if post.link %}{{ post.link }}{% else %}{{ site.url }}{{ post.url }}{% endif %}</link>
+  <id>{{ site.url }}{{ post.id }}</id>
+  {% if post.modified %}<updated>{{ post.modified | to_xmlschema }}T00:00:00-00:00</updated>
+  <published>{{ post.date | date_to_xmlschema }}</published>
+  {% else %}<published>{{ post.date | date_to_xmlschema }}</published>
+  <updated>{{ post.date | date_to_xmlschema }}</updated>{% endif %}
   <author>
-    <name>neilwu</name>
-    <uri>http://www.ad1988.com</uri>
-    <email>neilwu@opznet.com</email>
+    <name>{{ site.owner.name }}</name>
+    <uri>{{ site.url }}</uri>
+    <email>{{ site.owner.email }}</email>
   </author>
-  <content type="html">&lt;blockquote&gt;
-  &lt;p&gt;&quot;The beginning is the most important part of the work.&quot;
-&lt;small&gt;&lt;cite title=&quot;Plato&quot;&gt;Plato&lt;/cite&gt;&lt;/small&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;多谢&lt;a href=&quot;http://www.hossainmohdfaysal.com/&quot;&gt;hmfaysal&lt;/a&gt;的Jekyll theme，自己改了一下，终于开张啦。&lt;/p&gt;
-
-  &lt;p&gt;&lt;a href=&quot;http://www.ad1988.com/personal/first-commit&quot;&gt;博客开张&lt;/a&gt; was originally published by neilwu at &lt;a href=&quot;http://www.ad1988.com&quot;&gt;neilwu&lt;/a&gt; on July 19, 2015.&lt;/p&gt;</content>
+  <content type="html">{{ post.content | xml_escape }}
+  &lt;p&gt;&lt;a href=&quot;{{ site.url }}{{ post.url }}&quot;&gt;{{ post.title }}&lt;/a&gt; was originally published by {{ site.owner.name }} at &lt;a href=&quot;{{ site.url }}&quot;&gt;{{ site.title }}&lt;/a&gt; on {{ post.date | date: "%B %d, %Y" }}.&lt;/p&gt;</content>
 </entry>
-
+{% endfor %}
 </feed>

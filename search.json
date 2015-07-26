@@ -1,19 +1,13 @@
+---
+---
 [
-	
+	{% for post in site.posts %}
 		{
-		  "title"      : "使用xib来自定义UITableViewCell (Swift项目)",
-		  "category"   : "",
-		  "url"        : "http://www.ad1988.com/tech/xib-table-view-cell",
-		  "date"       : "2015-07-21 00:00:00 +0800",
-		  "shortdate"  : "July 21, 2015"
-		} ,
-	
-		{
-		  "title"      : "博客开张",
-		  "category"   : "",
-		  "url"        : "http://www.ad1988.com/personal/first-commit",
-		  "date"       : "2015-07-19 00:00:00 +0800",
-		  "shortdate"  : "July 19, 2015"
-		} 
-	
+		  "title"      : "{{ post.title | escape }}",
+		  "category"   : "{{ post.category }}",
+		  "url"        : "{{ site.url }}{{ post.url }}",
+		  "date"       : "{{ post.date }}",
+		  "shortdate"  : "{{ post.date | date: '%B %d, %Y' }}"
+		} {% if forloop.last %}{% else %},{% endif %}
+	{% endfor %}
 ]

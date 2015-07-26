@@ -1,26 +1,15 @@
+---
+---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-     
+    {% for link in site.links %}{% if link.external %}{% else %} 
     <url>
-        <loc>http://www.ad1988.com/</loc>
-    </url> 
+        <loc>{{ site.url }}{{ link.url }}</loc>
+    </url>{% endif %}{% endfor %}
+    
+    {% for post in site.posts %}
     <url>
-        <loc>http://www.ad1988.com/categories</loc>
-    </url> 
-    <url>
-        <loc>http://www.ad1988.com/tags</loc>
-    </url> 
-    <url>
-        <loc>http://www.ad1988.com/neilwu</loc>
+        <loc>{{ site.url }}{{ post.url }}</loc>
     </url>
-    
-    
-    <url>
-        <loc>http://www.ad1988.com/tech/xib-table-view-cell</loc>
-    </url>
-    
-    <url>
-        <loc>http://www.ad1988.com/personal/first-commit</loc>
-    </url>
-    
+    {% endfor %}
 </urlset>
