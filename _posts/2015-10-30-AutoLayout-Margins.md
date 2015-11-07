@@ -15,7 +15,7 @@ published: true
 imagefeature: bg/bg_maple.jpg
 
 ---
-在做UI适配的时候，发现个别view定义的leading和trailling margin在iPhone 6 plus下会有一点间隙（4dp），其他则正常，记录一下这个问题的原因。
+在做UI适配的时候，发现个别view定义的leading和trailling margin在iPhone 6 plus下会有一点间隙（4pt），其他则正常，记录一下这个问题的原因。
 
 ### 问题描述：
 
@@ -54,9 +54,9 @@ iPhone 6 plus的运行结果如下图，可以看到左右的边距：
 iOS8后，UIView 有个属性 `var layoutMargins: UIEdgeInsets`,用来指定该View的subview同其edge的间距。AutoLayout使用margins来放置内容。
 默认的值为8pt。
 
-如果一个View是ViewController的rootview，系统会自动设置和管理margins，top和bottom margins被设置为0pt，left和right的值根据当前的`size class`（文末简单介绍一下size class）不同而不同，可能取值为16或者20dp(iPhone6 plus, iPad)，你不能修改这些值。
+如果一个View是ViewController的rootview，系统会自动设置和管理margins，top和bottom margins被设置为0pt，left和right的值根据当前的`size class`（文末简单介绍一下size class）不同而不同，可能取值为16或者20pt(iPhone6 plus, iPad)，你不能修改这些值。
 
-所以，你知道iPhone 6 plus下那个4dp的间隙是怎么来的了吧。
+所以，你知道iPhone 6 plus下那个4pt的间隙是怎么来的了吧。
 
 当在一个空的ViewController里添加一个新UIView时，我们通过拖拽添加的约束会提示为类似：`Leading Space To Contrainer Margin`。而往一个UIView添加新的View，然后对其设置约束，会提示：`Leading Space To Contrainer`（这时候是到edge）。
 
