@@ -48,6 +48,12 @@
                     <i class="icon-github"></i>
                 </a>
             </li>{% endif %}
+
+            {% if site.owner.applestore %}<li>
+                <a href="{{ site.owner.applestore }}" data-toggle="tooltip" title="Apple商城" target="_blank">
+                    <i class="icon-apple"></i>
+                </a>
+            </li>{% endif %}
         </ul>
             <div>
                 <a href="{{ site.url }}/about/">{{ site.owner.name }}</a> &copy; {{ site.time | date: '%Y' }} &bull; All rights reserved.
