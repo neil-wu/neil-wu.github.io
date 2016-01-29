@@ -19,7 +19,7 @@ fin_color:        "255,255,255"
 # or use the hint from http://jekyllrb.com/docs/github-pages/ to keep this the same 
 # whether working locally or remotely. Start Jekyll with: jekyll serve --baseurl ''
 
-url: http://www.neilwu.me
+#url: http://www.neilwu.me
 
 # Owner/author information
 owner:
@@ -31,7 +31,7 @@ owner:
   # Social networking links used in footer. Update and remove as you like.
   twitter:        neil_wu
   #facebook:       hmfaysal
-  github:         neil-wu
+  github:         neil-wu       
   applestore:     http://www.apple.com/cn/
   #stackexchange:  https://stackexchange.com/users/3402032/hossain-mohd-faysal
   #linkedin:       https://www.linkedin.com/pub/firstname-lastname/12/345/678
@@ -42,6 +42,7 @@ owner:
   # google_plus:    https://plus.google.com/u/0/102602916593522619858
 
 # Analytics and webmaster tools stuff goes here
+# ////// setting in footer.html //////
 google_analytics:   UA-72984917-1
 google_verify:   
 # https://ssl.bing.com/webmaster/configure/verify/ownership Option 2 content= goes here
@@ -50,6 +51,7 @@ cnzz_analytics_id: 1255873096
 
 # Links to include in footer navigation
 # For external links add external: true
+# ////// icon in asset/css/style.css //////
 links:
   - title: <i class="icon-home"></i>  主页
     url: /
