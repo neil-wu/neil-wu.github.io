@@ -1,0 +1,742 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="default">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="LUjAlRCMEtqvvOs30zXqaYf6R8PTTlbDwcR_GnhQz4Q" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="技术,前端,iOS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="Swift是使用ARC来自动管理内存，这对开发者提供了便利，但从OC时代引入ARC以来，就一直面临着一个问题：循环引用。使用不当造成的循环引用，会导致内存无法释放，为解决这个问题，swift引入了weak和unowned两个关键字。当然，值类型是不涉及循环引用的问题，所以ARC仅仅应用于类的实例。 在编码时一般会出现两种情况的循环引用：1. 普通对象的循环强引用 2. 函数或闭包间的循环引用。 第">
+<meta name="keywords" content="技术,前端,iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Swift中的weak和unowned reference">
+<meta property="og:url" content="http://www.neilwu.me/2017/07/10/2015-09-04-Swift-weak-unowned/index.html">
+<meta property="og:site_name" content="NEILWU">
+<meta property="og:description" content="Swift是使用ARC来自动管理内存，这对开发者提供了便利，但从OC时代引入ARC以来，就一直面临着一个问题：循环引用。使用不当造成的循环引用，会导致内存无法释放，为解决这个问题，swift引入了weak和unowned两个关键字。当然，值类型是不涉及循环引用的问题，所以ARC仅仅应用于类的实例。 在编码时一般会出现两种情况的循环引用：1. 普通对象的循环强引用 2. 函数或闭包间的循环引用。 第">
+<meta property="og:updated_time" content="2017-07-10T07:28:25.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Swift中的weak和unowned reference">
+<meta name="twitter:description" content="Swift是使用ARC来自动管理内存，这对开发者提供了便利，但从OC时代引入ARC以来，就一直面临着一个问题：循环引用。使用不当造成的循环引用，会导致内存无法释放，为解决这个问题，swift引入了weak和unowned两个关键字。当然，值类型是不涉及循环引用的问题，所以ARC仅仅应用于类的实例。 在编码时一般会出现两种情况的循环引用：1. 普通对象的循环强引用 2. 函数或闭包间的循环引用。 第">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.neilwu.me/2017/07/10/2015-09-04-Swift-weak-unowned/"/>
+
+
+
+
+
+  <title>Swift中的weak和unowned reference | NEILWU</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">NEILWU</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">neilwu's time machine</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://www.neilwu.me/2017/07/10/2015-09-04-Swift-weak-unowned/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="neilwu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars1.githubusercontent.com/u/5682948?v=3&s=460">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NEILWU">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Swift中的weak和unowned reference</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-07-10T14:51:40+08:00">
+                2017-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Swift是使用ARC来自动管理内存，这对开发者提供了便利，但从OC时代引入ARC以来，就一直面临着一个问题：循环引用。使用不当造成的循环引用，会导致内存无法释放，为解决这个问题，swift引入了weak和unowned两个关键字。当然，值类型是不涉及循环引用的问题，所以ARC仅仅应用于类的实例。</p>
+<p>在编码时一般会出现两种情况的循环引用：1. 普通对象的循环强引用 2. 函数或闭包间的循环引用。 第一种情况相对比较容易发现，第二种情况更隐蔽，在使用的闭包时会无意间引入。</p>
+<a id="more"></a> 
+<h3 id="1-普通对象的循环强引用（比如设置delegate）"><a href="#1-普通对象的循环强引用（比如设置delegate）" class="headerlink" title="1. 普通对象的循环强引用（比如设置delegate）"></a>1. 普通对象的循环强引用（比如设置delegate）</h3><p>看以下代码片段：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">People</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">var</span> name: <span class="type">String</span> = <span class="string">""</span></div><div class="line">    <span class="keyword">var</span> pet: <span class="type">Dog</span>? = <span class="literal">nil</span></div><div class="line"></div><div class="line">    <span class="keyword">deinit</span> &#123;</div><div class="line">        <span class="built_in">println</span>(<span class="string">"People deinit"</span>)</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">var</span> people: <span class="type">People</span>? = <span class="literal">nil</span></div><div class="line">    <span class="keyword">deinit</span> &#123;</div><div class="line">        <span class="built_in">println</span>(<span class="string">"Dog deinit"</span>)</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">var</span> me = <span class="type">People</span>()</div><div class="line">me.name = <span class="string">"john"</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> pet = <span class="type">Dog</span>()</div><div class="line">pet.people = me</div><div class="line"></div><div class="line">me.pet = pet</div></pre></td></tr></table></figure>
+<p>在Xcode项目中运行（Playground自身会持有变量，不能在其中做这个测试）。可以看到并没有任何一个deinit被执行，me和pet互相持有了对方，造成了循环引用。</p>
+<p>如果我们在使用结束后，把me.pet=nil或者pet.people=nil，都会打破循环引用，各自对象均可以释放。但实际开发中这个置为nil的操作很容易遗漏，随着项目的复杂，排查难度会越来越大。</p>
+<p>这种情况下，使用弱引用（ weak reference），声明为 <code>weak var people: People? = nil</code>,使之并不保持对所指对象的强持有，因此并不阻止ARC对引用实例的回收。这个特性保证了引用不成为强引用循环的一部分。</p>
+<p>思考一下：这里可不可以修改为 <code>unowned var people: People? = nil</code> ??? （文末给出说明）</p>
+<h3 id="2-函数或闭包间的循环引用"><a href="#2-函数或闭包间的循环引用" class="headerlink" title="2. 函数或闭包间的循环引用"></a>2. 函数或闭包间的循环引用</h3><p>看以下代码片段：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="type">Alamofire</span>.request(.<span class="type">GET</span>,</div><div class="line">                  <span class="string">"http://httpbin.org/get"</span>,</div><div class="line">                  parameters: [<span class="string">"foo"</span>: <span class="string">"bar"</span>])</div><div class="line">         .response &#123; (request, response, data, error) <span class="keyword">in</span></div><div class="line">                     <span class="keyword">self</span>.doSomething()</div><div class="line">                   &#125;</div></pre></td></tr></table></figure>
+<p>这里使用Alamofire的一个简单使用来做说明，我们使用Alamofire来向服务器发送请求，在响应中，调用当前ViewController实例的doSomething（更新UI啊，保存数据等操作）。一切看起来似乎很正常，当这个Viewcontroller被pop或者dismiss后，惊讶的发现其deinit函数没有执行。</p>
+<p>由于Swift中的闭包是引用类型（也就是说，当定义一个函数(闭包)常量或变量时，实际上定义的是一个指向函数(闭包)的引用。这意味着如果指定一个闭包给两个不同的常量或变量，则这两个常量和变量将引用同一个函数(闭包)）。在以上代码执行时，该类的实例self生成了一个对response闭包的引用，而该闭包中，又引用了self实例，所以导致最后该实例没有释放。</p>
+<p>解决方法是使用 捕获列表：<code>[unowned self]  (request, response, data, error) in</code> 。捕获列表中的每个元素都是由weak或者unowned关键字和实例的引用（如self）成对组成。每一对都在方括号中，通过逗号分开。</p>
+<h3 id="如何选择使用weak或unowned"><a href="#如何选择使用weak或unowned" class="headerlink" title="如何选择使用weak或unowned"></a>如何选择使用weak或unowned</h3><p>回答上面提出的问题：不能使用<code>unowned var people: People? = nil</code></p>
+<p>简单来说：被标记为 weak 的变量一定需要是optional 值, unowned 不能是optional。</p>
+<p>Apple 给我们的建议是如果能够确定在访问时不会已被释放的话，尽量使用 unowned，如果存在被释放的可能，那就选择用 weak。weak友好一些，在引用的内容被释放后，标记为 weak 的成员将会自动地变成 nil。</p>
+<p>在实例的生命周期中，如果某些时候引用没有值，那么弱引用可以阻止循环强引用。如果引用总是有值，则可以使用无主引用，在无主引用中有描述。<br>弱引用必须被声明为变量，表明其值能在运行时被修改，不能被声明为常量。</p>
+<p>推荐阅读：</p>
+<p><a href="http://swifter.tips/retain-cycle/" target="_blank" rel="external">内存管理，WEAK 和 UNOWNED</a></p>
+<p><a href="http://southpeak.github.io/blog/2014/06/27/ios-swift-closures/" target="_blank" rel="external">Swift闭包一：闭包基础概念</a></p>
+<p>(完)</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/前端/" rel="tag"># 前端</a>
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/10/2015-08-08-SDWebImage-with-FLAnimatedImage/" rel="next" title="SDWebImage中使用FLAnimatedImage来播放gif">
+                <i class="fa fa-chevron-left"></i> SDWebImage中使用FLAnimatedImage来播放gif
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/10/2015-07-21-xib-table-view-cell/" rel="prev" title="使用xib来自定义UITableViewCell (Swift项目)">
+                使用xib来自定义UITableViewCell (Swift项目) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars1.githubusercontent.com/u/5682948?v=3&s=460"
+               alt="neilwu" />
+          <p class="site-author-name" itemprop="name">neilwu</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">categories</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/neil-wu" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+          <div class="cc-license motion-element" itemprop="license">
+            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+              <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+            </a>
+          </div>
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-普通对象的循环强引用（比如设置delegate）"><span class="nav-number">1.</span> <span class="nav-text">1. 普通对象的循环强引用（比如设置delegate）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-函数或闭包间的循环引用"><span class="nav-number">2.</span> <span class="nav-text">2. 函数或闭包间的循环引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何选择使用weak或unowned"><span class="nav-number">3.</span> <span class="nav-text">如何选择使用weak或unowned</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">neilwu</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

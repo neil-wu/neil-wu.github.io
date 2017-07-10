@@ -1,0 +1,731 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="default">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="LUjAlRCMEtqvvOs30zXqaYf6R8PTTlbDwcR_GnhQz4Q" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="技术,前端,iOS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="SDWebImage 对gif图片的支持不是非常好，我们可以在其项目的讨论区看到大家的吐槽( Drop our GIF support and integrate a 3rd party solution #945)。我简单修改了几处源码，使用 FLAnimatedImage来显示gif图片。SDWebImage 仍用作默认的图片加载和缓存，只是在需要显示gif图片时，改用FLAnimatedIm">
+<meta name="keywords" content="技术,前端,iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SDWebImage中使用FLAnimatedImage来播放gif">
+<meta property="og:url" content="http://www.neilwu.me/2017/07/10/2015-08-08-SDWebImage-with-FLAnimatedImage/index.html">
+<meta property="og:site_name" content="NEILWU">
+<meta property="og:description" content="SDWebImage 对gif图片的支持不是非常好，我们可以在其项目的讨论区看到大家的吐槽( Drop our GIF support and integrate a 3rd party solution #945)。我简单修改了几处源码，使用 FLAnimatedImage来显示gif图片。SDWebImage 仍用作默认的图片加载和缓存，只是在需要显示gif图片时，改用FLAnimatedIm">
+<meta property="og:updated_time" content="2017-07-10T07:25:39.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SDWebImage中使用FLAnimatedImage来播放gif">
+<meta name="twitter:description" content="SDWebImage 对gif图片的支持不是非常好，我们可以在其项目的讨论区看到大家的吐槽( Drop our GIF support and integrate a 3rd party solution #945)。我简单修改了几处源码，使用 FLAnimatedImage来显示gif图片。SDWebImage 仍用作默认的图片加载和缓存，只是在需要显示gif图片时，改用FLAnimatedIm">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.neilwu.me/2017/07/10/2015-08-08-SDWebImage-with-FLAnimatedImage/"/>
+
+
+
+
+
+  <title>SDWebImage中使用FLAnimatedImage来播放gif | NEILWU</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">NEILWU</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">neilwu's time machine</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://www.neilwu.me/2017/07/10/2015-08-08-SDWebImage-with-FLAnimatedImage/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="neilwu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars1.githubusercontent.com/u/5682948?v=3&s=460">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NEILWU">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SDWebImage中使用FLAnimatedImage来播放gif</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-07-10T14:51:40+08:00">
+                2017-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/rs/SDWebImage" target="_blank" rel="external">SDWebImage</a> 对gif图片的支持不是非常好，我们可以在其项目的讨论区看到大家的吐槽( <a href="https://github.com/rs/SDWebImage/issues/945" target="_blank" rel="external">Drop our GIF support and integrate a 3rd party solution #945</a>)。我简单修改了几处源码，使用 <a href="https://github.com/Flipboard/FLAnimatedImage" target="_blank" rel="external">FLAnimatedImage</a>来显示gif图片。SDWebImage 仍用作默认的图片加载和缓存，只是在需要显示gif图片时，改用FLAnimatedImage。</p>
+<a id="more"></a> 
+<p>对源码的修改和如何使用，看这个 <a href="https://github.com/neil-wu/SDImageCacheWithGifDemo" target="_blank" rel="external">Demo</a></p>
+<p>操作步骤：</p>
+<h3 id="1-屏蔽SDWebImage显示gif图片的代码"><a href="#1-屏蔽SDWebImage显示gif图片的代码" class="headerlink" title="1. 屏蔽SDWebImage显示gif图片的代码"></a>1. 屏蔽SDWebImage显示gif图片的代码</h3><p>修改文件 <code>UIImage+MultiFormat.m</code>的第22-26行代码(行数可能有误差)，注释掉这部分代码，如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">+ (<span class="type">UIImage</span> *)sd_imageWithData:(<span class="type">NSData</span> *)data &#123;</div><div class="line">    <span class="type">UIImage</span> *image;</div><div class="line">    <span class="comment">/*</span></div><div class="line">    //注释掉这里</div><div class="line">    NSString *imageContentType = [NSData sd_contentTypeForImageData:data];</div><div class="line">    if ([imageContentType isEqualToString:@"image/gif"]) &#123;</div><div class="line">        image = [UIImage sd_animatedGIFWithData:data];</div><div class="line">    &#125;*/</div><div class="line">    <span class="keyword">if</span> (<span class="number">0</span>) &#123; <span class="comment">//然后添加此if</span></div><div class="line">    &#125;</div><div class="line">#ifdef <span class="type">SD_WEBP</span></div></pre></td></tr></table></figure>
+<h3 id="2-修改SDImageCache-h，将如下函数设为公有"><a href="#2-修改SDImageCache-h，将如下函数设为公有" class="headerlink" title="2. 修改SDImageCache.h，将如下函数设为公有"></a>2. 修改SDImageCache.h，将如下函数设为公有</h3><p>在SDImageCache.h里，添加<br><code>- (NSData *)diskImageDataBySearchingAllPathsForKey:(NSString *)key;</code> 声明。该函数已经实现，这里只是将其公有，以便我们能获取到gif图片数据，传给FLAnimatedImage来使用。</p>
+<h3 id="3-显示图片时判断是否需要使用FLAnimatedImage"><a href="#3-显示图片时判断是否需要使用FLAnimatedImage" class="headerlink" title="3. 显示图片时判断是否需要使用FLAnimatedImage"></a>3. 显示图片时判断是否需要使用FLAnimatedImage</h3><p>直接看代码吧：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> imgurlstring.hasSuffix(<span class="string">".gif"</span>) &#123;</div><div class="line">    <span class="comment">//we use NSData from the cache</span></div><div class="line">    <span class="keyword">var</span> data = <span class="type">SDWebImageManager</span>.sharedManager().imageCache.diskImageDataBySearchingAllPathsForKey(imgurlstring)</div><div class="line">    <span class="keyword">var</span> img = <span class="type">FLAnimatedImage</span>(animatedGIFData: data!)</div><div class="line">    <span class="keyword">var</span> imgview = <span class="type">FLAnimatedImageView</span>(frame: <span class="type">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="keyword">self</span>.baseview.frame.width, <span class="keyword">self</span>.baseview.frame.height))</div><div class="line">    imgview.animatedImage = img</div><div class="line">    imgview.contentMode = <span class="type">UIViewContentMode</span>.<span class="type">ScaleAspectFit</span></div><div class="line">    <span class="keyword">self</span>.baseview.addSubview(imgview)</div><div class="line">&#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="keyword">var</span> pngview = <span class="type">UIImageView</span>(image: image)</div><div class="line">    pngview.frame = <span class="type">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="keyword">self</span>.baseview.frame.width, <span class="keyword">self</span>.baseview.frame.height)</div><div class="line">    pngview.contentMode = <span class="type">UIViewContentMode</span>.<span class="type">ScaleAspectFit</span></div><div class="line">    <span class="keyword">self</span>.baseview.addSubview(pngview)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>或者直接下载这个 <a href="https://github.com/neil-wu/SDImageCacheWithGifDemo" target="_blank" rel="external">Demo</a> 来看效果。:]</p>
+<p>(完)</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/前端/" rel="tag"># 前端</a>
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/10/2015-10-30-AutoLayout-Margins/" rel="next" title="关于AutoLayout中的margin">
+                <i class="fa fa-chevron-left"></i> 关于AutoLayout中的margin
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/10/2015-09-04-Swift-weak-unowned/" rel="prev" title="Swift中的weak和unowned reference">
+                Swift中的weak和unowned reference <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars1.githubusercontent.com/u/5682948?v=3&s=460"
+               alt="neilwu" />
+          <p class="site-author-name" itemprop="name">neilwu</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">categories</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/neil-wu" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+          <div class="cc-license motion-element" itemprop="license">
+            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+              <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+            </a>
+          </div>
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-屏蔽SDWebImage显示gif图片的代码"><span class="nav-number">1.</span> <span class="nav-text">1. 屏蔽SDWebImage显示gif图片的代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-修改SDImageCache-h，将如下函数设为公有"><span class="nav-number">2.</span> <span class="nav-text">2. 修改SDImageCache.h，将如下函数设为公有</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-显示图片时判断是否需要使用FLAnimatedImage"><span class="nav-number">3.</span> <span class="nav-text">3. 显示图片时判断是否需要使用FLAnimatedImage</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">neilwu</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

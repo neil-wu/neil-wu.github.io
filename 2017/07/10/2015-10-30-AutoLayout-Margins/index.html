@@ -1,0 +1,758 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="default">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="LUjAlRCMEtqvvOs30zXqaYf6R8PTTlbDwcR_GnhQz4Q" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="技术,前端,iOS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="在做UI适配的时候，发现个别view定义的leading和trailling margin在iPhone 6 plus下会有一点间隙（4pt），其他则正常，记录一下这个问题的原因。">
+<meta name="keywords" content="技术,前端,iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于AutoLayout中的margin">
+<meta property="og:url" content="http://www.neilwu.me/2017/07/10/2015-10-30-AutoLayout-Margins/index.html">
+<meta property="og:site_name" content="NEILWU">
+<meta property="og:description" content="在做UI适配的时候，发现个别view定义的leading和trailling margin在iPhone 6 plus下会有一点间隙（4pt），其他则正常，记录一下这个问题的原因。">
+<meta property="og:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-1.png">
+<meta property="og:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-2.png">
+<meta property="og:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-3.png">
+<meta property="og:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-4.png">
+<meta property="og:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-5.png">
+<meta property="og:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-6.png">
+<meta property="og:updated_time" content="2017-07-10T07:29:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于AutoLayout中的margin">
+<meta name="twitter:description" content="在做UI适配的时候，发现个别view定义的leading和trailling margin在iPhone 6 plus下会有一点间隙（4pt），其他则正常，记录一下这个问题的原因。">
+<meta name="twitter:image" content="http://www.neilwu.me/images/article/autolayout/autolayout-margin-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.neilwu.me/2017/07/10/2015-10-30-AutoLayout-Margins/"/>
+
+
+
+
+
+  <title>关于AutoLayout中的margin | NEILWU</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">NEILWU</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">neilwu's time machine</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://www.neilwu.me/2017/07/10/2015-10-30-AutoLayout-Margins/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="neilwu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars1.githubusercontent.com/u/5682948?v=3&s=460">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NEILWU">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">关于AutoLayout中的margin</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-07-10T14:51:40+08:00">
+                2017-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/tech/" itemprop="url" rel="index">
+                    <span itemprop="name">tech</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在做UI适配的时候，发现个别view定义的leading和trailling margin在iPhone 6 plus下会有一点间隙（4pt），其他则正常，记录一下这个问题的原因。</p>
+<a id="more"></a> 
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>在IB里向一个空的ViewController中添加一个UIView对象，拖动左右边界对齐父视图，如下图：</p>
+<figure><br>    <a href="/images/article/autolayout/autolayout-margin-1.png"><img src="/images/article/autolayout/autolayout-margin-1.png"></a><br></figure>
+
+
+<p>添加leading and trailing space约束，（同时添加个居中约束，高度约束，）如下图：</p>
+<figure><br>    <a href="/images/article/autolayout/autolayout-margin-2.png"><img src="/images/article/autolayout/autolayout-margin-2.png"></a><br></figure>
+
+<p>可以看到结果如下：</p>
+<figure><br>    <a href="/images/article/autolayout/autolayout-margin-3.png"><img src="/images/article/autolayout/autolayout-margin-3.png"></a><br></figure>
+
+<p>可以看到IB设置的约束值为-16，(如果在这里将其改为0，IB会提示该View需要更新size，更新后在IB里会看到左右边距)。</p>
+<p>使用-16的约束值，运行，在iPhone5s下表现正常，如下图：</p>
+<figure><br>    <a href="/images/article/autolayout/autolayout-margin-4.png"><img src="/images/article/autolayout/autolayout-margin-4.png"></a><br></figure>
+
+<p>iPhone 6 plus的运行结果如下图，可以看到左右的边距：</p>
+<figure><br>    <a href="/images/article/autolayout/autolayout-margin-5.png"><img src="/images/article/autolayout/autolayout-margin-5.png"></a><br></figure>
+
+<h3 id="为什么同样的约束，在plus下会出现这样的结果呢？因为layoutMargins"><a href="#为什么同样的约束，在plus下会出现这样的结果呢？因为layoutMargins" class="headerlink" title="为什么同样的约束，在plus下会出现这样的结果呢？因为layoutMargins"></a>为什么同样的约束，在plus下会出现这样的结果呢？因为<code>layoutMargins</code></h3><h3 id="关于layoutMargins"><a href="#关于layoutMargins" class="headerlink" title="关于layoutMargins"></a>关于layoutMargins</h3><p>iOS8后，UIView 有个属性 <code>var layoutMargins: UIEdgeInsets</code>,用来指定该View的subview同其edge的间距。AutoLayout使用margins来放置内容。<br>默认的值为8pt。</p>
+<p>如果一个View是ViewController的rootview，系统会自动设置和管理margins，top和bottom margins被设置为0pt，left和right的值根据当前的<code>size class</code>（文末简单介绍一下size class）不同而不同，可能取值为16或者20pt(iPhone6 plus, iPad)，你不能修改这些值。</p>
+<p>所以，你知道iPhone 6 plus下那个4pt的间隙是怎么来的了吧。</p>
+<p>当在一个空的ViewController里添加一个新UIView时，我们通过拖拽添加的约束会提示为类似：<code>Leading Space To Contrainer Margin</code>。而往一个UIView添加新的View，然后对其设置约束，会提示：<code>Leading Space To Contrainer</code>（这时候是到edge）。</p>
+<p>如果想要将<code>Leading Space To Contrainer Margin</code>设置为edge对齐，可以这样操作：双击编辑该约束，如下图所示，取消掉 <code>Relative to margin</code></p>
+<figure><br>    <a href="/images/article/autolayout/autolayout-margin-6.png"><img src="/images/article/autolayout/autolayout-margin-6.png"></a><br></figure>
+
+<p>参考Apple的文档:  <a href="https://developer.apple.com/library/ios/recipes/xcode_help-IB_auto_layout/chapters/EditingConstraintAttributesintheAttributesInspector.html" target="_blank" rel="external">Editing Auto Layout Constraints</a></p>
+<p>附录：size class 简单说明</p>
+<p>Size Class 的作用是将不同尺寸的屏幕进行分类处理。对于宽度和高度而言，都有三种情况：紧凑 (Compact) 、任意 (Any) 、 正常 (Regular) ，所以一共有9个类别.</p>
+<p>参考说明： <a href="http://onevcat.com/2014/07/ios-ui-unique/" target="_blank" rel="external">Size Classes</a></p>
+<p>(完)</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/技术/" rel="tag"># 技术</a>
+          
+            <a href="/tags/前端/" rel="tag"># 前端</a>
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/10/2016-01-27-Airbnb-reg/" rel="next" title="Airbnb订房推广优惠，赠送￥263账户余额">
+                <i class="fa fa-chevron-left"></i> Airbnb订房推广优惠，赠送￥263账户余额
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/10/2015-08-08-SDWebImage-with-FLAnimatedImage/" rel="prev" title="SDWebImage中使用FLAnimatedImage来播放gif">
+                SDWebImage中使用FLAnimatedImage来播放gif <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars1.githubusercontent.com/u/5682948?v=3&s=460"
+               alt="neilwu" />
+          <p class="site-author-name" itemprop="name">neilwu</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">categories</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/neil-wu" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+          <div class="cc-license motion-element" itemprop="license">
+            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+              <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+            </a>
+          </div>
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题描述："><span class="nav-number">1.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么同样的约束，在plus下会出现这样的结果呢？因为layoutMargins"><span class="nav-number">2.</span> <span class="nav-text">为什么同样的约束，在plus下会出现这样的结果呢？因为layoutMargins</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于layoutMargins"><span class="nav-number">3.</span> <span class="nav-text">关于layoutMargins</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">neilwu</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
