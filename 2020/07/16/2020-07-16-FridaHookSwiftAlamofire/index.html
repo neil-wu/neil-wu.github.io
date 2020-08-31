@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="default">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+  <link rel="alternate" href="/atom.xml" title="NEILWU" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="初探Swift Runtime：使用Frida实现针对Alamofire的抓包工具 0x00 背景Swift自2014年发布以来，在Apple的开发生态下占据的位置越来越重要，国外友人在2019年统计过超过半数的非游戏类app已经使用swift，淘宝技术团队曾发文介绍过他们的swift实践。随着swift5在2019年的发布，swift也终于进入ABI稳定，这无疑具有里程碑的意义，相信会有更多的A">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FridaHookSwiftAlamofire">
+<meta property="og:url" content="https://neil-wu.github.io/2020/07/16/2020-07-16-FridaHookSwiftAlamofire/index.html">
+<meta property="og:site_name" content="NEILWU">
+<meta property="og:description" content="初探Swift Runtime：使用Frida实现针对Alamofire的抓包工具 0x00 背景Swift自2014年发布以来，在Apple的开发生态下占据的位置越来越重要，国外友人在2019年统计过超过半数的非游戏类app已经使用swift，淘宝技术团队曾发文介绍过他们的swift实践。随着swift5在2019年的发布，swift也终于进入ABI稳定，这无疑具有里程碑的意义，相信会有更多的A">
+<meta property="og:image" content="https://github.com/neil-wu/FridaHookSwiftAlamofire/raw/master/doc/swift_data.jpg">
+<meta property="og:image" content="https://github.com/neil-wu/FridaHookSwiftAlamofire/raw/master/doc/af_debug.png">
+<meta property="article:published_time" content="2020-07-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-08-31T02:55:31.477Z">
+<meta property="article:author" content="neilwu">
+<meta property="article:tag" content="技术">
+<meta property="article:tag" content="iOS逆向">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/neil-wu/FridaHookSwiftAlamofire/raw/master/doc/swift_data.jpg">
+  <link rel="canonical" href="https://neil-wu.github.io/2020/07/16/2020-07-16-FridaHookSwiftAlamofire/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>FridaHookSwiftAlamofire | NEILWU</title>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-72984917-1"></script>
+  <script>
+    var host = window.location.hostname;
+    if (host !== "localhost" || !true) {
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-72984917-1');
+    }
+  </script>
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">NEILWU</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">neilwu's time machine</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/neil-wu" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://neil-wu.github.io/2020/07/16/2020-07-16-FridaHookSwiftAlamofire/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="neilwu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NEILWU">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">FridaHookSwiftAlamofire
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2020-07-16 00:00:00" itemprop="dateCreated datePublished" datetime="2020-07-16T00:00:00+08:00">2020-07-16</time>
+            </span>
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tech/" itemprop="url" rel="index"><span itemprop="name">tech</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+        
+      
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/2020/07/16/2020-07-16-FridaHookSwiftAlamofire/#comments" itemprop="discussionUrl"><span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/07/16/2020-07-16-FridaHookSwiftAlamofire/" itemprop="commentCount"></span></a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>初探Swift Runtime：使用Frida实现针对Alamofire的抓包工具</p>
+<h3 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h3><p>Swift自2014年发布以来，在Apple的开发生态下占据的位置越来越重要，国外友人在2019年统计过超过半数的非游戏类app已经使用swift，淘宝技术团队曾发文介绍过他们的<a href="https://mp.weixin.qq.com/s/UfOJK07Lhw72dGf0z1znbA" target="_blank" rel="noopener">swift实践</a>。随着swift5在2019年的发布，swift也终于进入ABI稳定，这无疑具有里程碑的意义，相信会有更多的App将离不开swift。</p>
+<p>从逆向的角度看，关于swift的研究分析却较少，一些好项目还由于面向的swift的版本过老而与swift5存在兼容问题无法使用，比如 <a href="https://github.com/maltek/swift-frida" target="_blank" rel="noopener">swift-frida</a>。</p>
+<p>笔者最近粗略学习了一下swift相关的文档，从swift类型在Mach-O文件中的结构入门，逐步到运行时分析。已经实现了一个从Mach-O文件中获取swift对象定义的命令行工具<a href="https://github.com/neil-wu/SwiftDump" target="_blank" rel="noopener">SwiftDump</a>，包括其Frida版本<a href="https://github.com/neil-wu/FridaSwiftDump/" target="_blank" rel="noopener">FridaSwiftDump</a>。</p>
+<p>在本文中，将着重从Swift Runtime数据结构入手进行分析，面向Github上3.3万star的swift HTTP网络库<a href="https://github.com/Alamofire/Alamofire" target="_blank" rel="noopener">Alamofire</a>，实现一个基础版本的抓包工具，具备：打印GET/POST请求；屏蔽SSL Pinning。过程中会介绍到swift的内存布局，函数调用约定，参数传递，运行时函数调用。</p>
+<p><strong>项目地址：<a href="https://github.com/neil-wu/FridaHookSwiftAlamofire" target="_blank" rel="noopener">FridaHookSwiftAlamofire</a></strong></p>
+<a id="more"></a>  
+
+<h3 id="0x01-测试环境"><a href="#0x01-测试环境" class="headerlink" title="0x01 测试环境"></a>0x01 测试环境</h3><p>新建空的iOS Swift工程，并使用cocoapods 引用 Alamofire 5.2.1作为framework。<br>使用的Xcode版本为Version 11.5 (11E608c)，swift 5.2，在ARM64的真机下运行。</p>
+<h3 id="0x02-确认关键函数"><a href="#0x02-确认关键函数" class="headerlink" title="0x02 确认关键函数"></a>0x02 确认关键函数</h3><p>我们先从正向的开发环境入手，搞清楚Alamofire的请求过程，挖掘出合适的函数进行Hook。使用Frida完成一个可用的版本后，对其他app进行测试查看实际的使用效果。</p>
+<h4 id="1-Alamofire-Get请求示例"><a href="#1-Alamofire-Get请求示例" class="headerlink" title="1. Alamofire Get请求示例"></a>1. Alamofire Get请求示例</h4><p>发送一个简单的GET请求，测试代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Alamofire</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> urlstr = <span class="string">"https://httpbin.org/get?time=\( Int(Date().timeIntervalSince1970) )"</span>;</span><br><span class="line"><span class="type">AF</span>.request(urlstr).response &#123; (rsp:<span class="type">AFDataResponse</span>&lt;<span class="type">Data?</span>&gt;) <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> data = rsp.data &#123;</span><br><span class="line">        <span class="keyword">let</span> str = <span class="type">String</span>(data: data, encoding: <span class="type">String</span>.<span class="type">Encoding</span>.utf8) ?? <span class="string">"nil"</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"rspstr="</span>, str);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> str: <span class="type">String</span> = <span class="string">"faild, err=\(rsp.error?.errorDescription ?? "</span><span class="literal">nil</span><span class="string">")"</span></span><br><span class="line">        <span class="built_in">print</span>(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-Alamofire的实现分析"><a href="#2-Alamofire的实现分析" class="headerlink" title="2. Alamofire的实现分析"></a>2. Alamofire的实现分析</h4><p>AF 是 Session.default，<code>Session</code> 是Alamofire中创建和管理<code>Request</code>。<br>调用 AF.request 后， Session会新建一个DataRequest, 并将其加入requestQueue中执行setup过程进行创建。<br>查看DataRequest，在新建出来后，会调用：<br><code>override func task(for request: URLRequest, using session: URLSession) -&gt; URLSessionTask</code><br>熟悉OC的朋友都知道，OC里有个NSURLSessionTask，此处的URLSessionTask正是为了兼容OC而存在的，可以<a href="https://github.com/apple/swift-corelibs-foundation/blob/master/Sources/FoundationNetworking/URLSession/URLSessionTask.swift" target="_blank" rel="noopener">查看其源码</a>。</p>
+<p>既然是与OC兼容，那我们就以Hook OC的方式Hook函数 <code>open func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -&gt; Void) -&gt; URLSessionDataTask</code>。具体实现在 HookDataTaskWithRequest.ts 中，此处比较简单，不再赘述。</p>
+<p>运行Frida Hook，重新发送GET请求，发现确实触发了该Hook，但是completionHandler参数为空。为什么呢？</p>
+<p>继续回到Alamofire源码，看到 Session.swift 的init里可以看到默认URLSession的delegate为SessionDelegate，由其处理请求的各种数据和状态回调。</p>
+<p>找到<code>open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data)</code>，在此函数内接收回包的数据。我们在此进行Hook。这是一个swift函数，并不能用刚才OC的方法进行hook。swift导出的函数在被编译的时候，函数符号名会被name mangle，在swift5下，变为以$开始的一个字符串，其中包含类型信息，比如该函数被修饰为：<br><code>$s9Alamofire15SessionDelegateC03urlB0_8dataTask10didReceiveySo12NSURLSessionC_So0i4DataF0C10Foundation0J0VtF</code> </p>
+<p>我们可以用以下命令来将符号还原（注意$符号前面的\）：</p>
+<p><code>swift demangle &quot;\$s9Alamofire15SessionDelegateC03urlB0_8dataTask10didReceiveySo12NSURLSessionC_So0i4DataF0C10Foundation0J0VtF&quot;</code><br>输出结果为<br><code>Alamofire.SessionDelegate.urlSession(_: __C.NSURLSession, dataTask: __C.NSURLSessionDataTask, didReceive: Foundation.Data) -&gt; ()</code><br>确认是我们需要的函数符号。</p>
+<h3 id="0x03-Foundation-Data的内存布局"><a href="#0x03-Foundation-Data的内存布局" class="headerlink" title="0x03. Foundation.Data的内存布局"></a>0x03. Foundation.Data的内存布局</h3><p>接着以上步骤，在Frida中使用 getExportByName，来获取函数指针并Hook。第一个参数和第二个参数都是兼容OC的类型，可以转为Frida的ObjC.Object类型进行访问。第三个参数为Swift的Foundation.Data类型，怎么获取其数据呢？</p>
+<p>先来研究Foundation.Data，Swift的Foundation库已经<a href="https://github.com/apple/swift-corelibs-foundation" target="_blank" rel="noopener">开源</a>，可以一探究竟。找到 <code>Data.swift</code>，将其简化一下，只保留相关定义：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">Data</span> : <span class="title">ReferenceConvertible</span>, <span class="title">Equatable</span>, <span class="title">Hashable</span>, <span class="title">RandomAccessCollection</span>, <span class="title">MutableCollection</span>, <span class="title">RangeReplaceableCollection</span>, <span class="title">MutableDataProtocol</span>, <span class="title">ContiguousBytes</span> </span>&#123;</span><br><span class="line">    <span class="comment">// A small inline buffer of bytes suitable for stack-allocation of small data.</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">InlineData</span> </span>&#123;<span class="comment">// max=15 bytes</span></span><br><span class="line">        <span class="keyword">var</span> bytes: <span class="type">Buffer</span> <span class="comment">// 15 bytes</span></span><br><span class="line">        <span class="keyword">var</span> length: <span class="type">UInt8</span> <span class="comment">// 1 bytes</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// A buffer of bytes too large to fit in an InlineData, but still small enough to fit a storage pointer + range in two words.</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">InlineSlice</span> </span>&#123;  <span class="comment">// max=HalfInt.max</span></span><br><span class="line">        <span class="keyword">var</span> slice: <span class="type">Range</span>&lt;<span class="type">HalfInt</span>&gt;</span><br><span class="line">        <span class="keyword">var</span> storage: __DataStorage</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">RangeReference</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// A buffer of bytes whose range is too large to fit in a signle word. Used alongside a RangeReference to make it fit into _Representation's two-word size.</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">LargeSlice</span> </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> slice: <span class="type">RangeReference</span></span><br><span class="line">        <span class="keyword">var</span> storage: __DataStorage</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// The actual storage for Data's various representations.</span></span><br><span class="line">    <span class="keyword">internal</span> <span class="class"><span class="keyword">enum</span> <span class="title">_Representation</span> </span>&#123;</span><br><span class="line">        <span class="keyword">case</span> empty</span><br><span class="line">        <span class="keyword">case</span> inline(<span class="type">InlineData</span>)</span><br><span class="line">        <span class="keyword">case</span> slice(<span class="type">InlineSlice</span>)</span><br><span class="line">        <span class="keyword">case</span> large(<span class="type">LargeSlice</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">internal</span> <span class="keyword">var</span> _representation: _Representation</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Underlying storage representation for medium and large data.</span></span><br><span class="line"><span class="keyword">internal</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">__DataStorage</span> </span>&#123;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>基本结构已知，根据的Data大小不同有不同的表示方式，具体参考上面代码的注释。在arm64环境下，我们的测试请求响应数据大小只有几百bytes，符合InlineSlice。结构如下图所示：</p>
+<p><a href="https://github.com/apple/swift/blob/master/docs/ABI/CallingConvention.rst#id13" target="_blank" rel="noopener">Swift ABI调用约定</a>里有介绍，swift非常注重第一类型，并且能够在寄存器中直接传递类型值。</p>
+<p>在此处的Data类型就用到了这种方法。Data类型的数据被分为两个寄存器来传递：args[2]传递range信息，args[3]传递__DataStorage指针(args[0]指向NSURLSession，args[1]指向NSURLSessionDataTask，函数原型只有三个参数，但实际上调用时会有4个参数)。<br><img src="https://github.com/neil-wu/FridaHookSwiftAlamofire/raw/master/doc/swift_data.jpg" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">args[2] &#x3D; 0x1e000000000 &#x3D;&gt; 0x0,0x1e0 &#x3D;&gt; range from 0 to 0x1e0</span><br><span class="line">args[3] &#x3D; DataStorage&#39;s address</span><br></pre></td></tr></table></figure>
+
+<p>而__DataStorage是swift class，可以根据<a href="https://github.com/TannerJin/Swift-MemoryLayout/blob/master/Swift/Class.swift" target="_blank" rel="noopener">class memory-layout</a>，解析出对应的地址（参考上面的结构关系图，代码实现在 SDSwiftDataStorage.ts中）。</p>
+<p>注：事实上，我们在正向开发过程中，用Xcode打断点调试，也能看到swift Data的大概结构，如下图：<br><img src="https://github.com/neil-wu/FridaHookSwiftAlamofire/raw/master/doc/af_debug.png" alt=""></p>
+<h3 id="0x04-Kill-SSL-Pinning"><a href="#0x04-Kill-SSL-Pinning" class="headerlink" title="0x04. Kill SSL Pinning"></a>0x04. Kill SSL Pinning</h3><p>先看看Alamofire怎么使用SSL Pinning:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> manager = <span class="type">ServerTrustManager</span>(evaluators: [<span class="string">"httpbin.org"</span>: <span class="type">PinnedCertificatesTrustEvaluator</span>()])</span><br><span class="line"><span class="keyword">self</span>.session = <span class="type">Session</span>(serverTrustManager: manager)</span><br></pre></td></tr></table></figure>
+
+<p>跟踪代码，在<code>func attemptServerTrustAuthentication(with challenge: URLAuthenticationChallenge) -&gt; ChallengeEvaluation</code> 里会判断是否需要检查证书，设置了Pinning后会返回useCredential，如果没有设置任何检查项，则返回<code>(.performDefaultHandling, nil, nil)</code>，我们在此只需修改该函数永远返回这个Tuple值。<br>Tuple的memory layout是线性布局的(如果未内存对齐，会为了内存对齐填充0)，用Frida Hook后，指针指向的第一个值就是要修改的值。</p>
+<p>代码在HookAFServerTrust.ts中，如下：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TypeScript</span></span><br><span class="line"><span class="keyword">let</span> func_attemptServerTrust = Module.getExportByName(<span class="literal">null</span>, <span class="string">'$s9Alamofire15SessionDelegateC32attemptServerTrustAuthentication4withSo36NSURLSessionAuthChallengeDispositionV11disposition_So15NSURLCredentialCSg10credentialAA7AFErrorOSg5errortSo019NSURLAuthenticationK0C_tF'</span>); </span><br><span class="line">log(<span class="string">`[HookAFServerTrust] hook func_attemptServerTrust <span class="subst">$&#123;func_attemptServerTrust&#125;</span>`</span>);</span><br><span class="line">Interceptor.attach(func_attemptServerTrust, &#123;</span><br><span class="line">    onLeave(retval:InvocationReturnValue) &#123;</span><br><span class="line">        <span class="comment">// force set retval to 0x1 to enable .performDefaultHandling</span></span><br><span class="line">        <span class="keyword">let</span> val = retval.toInt32();</span><br><span class="line">        <span class="keyword">if</span> (val != <span class="number">0x1</span>) &#123;</span><br><span class="line">            log(<span class="string">`[HookAFServerTrust] attemptServerTrustAuthentication retval <span class="subst">$&#123;retval&#125;</span>, reset to 0x1`</span>);</span><br><span class="line">            <span class="keyword">let</span> fakeret = <span class="keyword">new</span> NativePointer(<span class="number">0x1</span>)</span><br><span class="line">            retval.replace(fakeret)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="0x05-Swift-String"><a href="#0x05-Swift-String" class="headerlink" title="0x05. Swift String"></a>0x05. Swift String</h3><p>如果我们想获取字符串Swift.String的值，该怎么做呢？<br>查看String的<a href="https://github.com/TannerJin/Swift-MemoryLayout/blob/master/SwiftCore/String.swift" target="_blank" rel="noopener">内存布局</a>。我们可知，String是Struct，值类型，分为 Small(&lt;=15bytes) 和 Large两种表示方式。我们知道Foundation.URL有个函数可以根据String初始化。符号如下：<br><code>s10Foundation3URLV6stringACSgSSh_tcfC ---&gt; Foundation.URL.init(string: __shared Swift.String) -&gt; Foundation.URL?</code>。hook这个函数，笔者发现，对于Small String，Swift会直接使用两个参数来传递该值。对于Large String，是使用两个参数分别指向了两个属性（符合ABI里介绍的调用约定，Swift值类型在传递时特定的情况下会直接用寄存器传递）。具体代码在文件SDSwiftString.ts中。</p>
+<h3 id="0x06-One-More-Step"><a href="#0x06-One-More-Step" class="headerlink" title="0x06. One More Step"></a>0x06. One More Step</h3><p>能否直接调用Swift的运行时函数呢？<br>答案是可以的，但是需要传入合适的参数。<br>举个例子：<br>使用IDA分析我们的测试程序，可以发现<code>$s10Foundation4DataV19_bridgeToObjectiveCSo6NSDataCyF</code> 函数原型为<br><code>Foundation.Data._bridgeToObjectiveC() -&gt; __C.NSData</code><br>它可以将Data类型转为NSData类型，而NSData类型我们是可以直接在Frida下使用的OC类型。参考以上，可以将Data用两个参数传递给这个函数即可，分别表示range和DataStorage。示例代码在 <code>SwiftRuntime.ts</code>中：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取函数符号地址</span></span><br><span class="line"><span class="keyword">const</span> func_data2nsdata_ptr = Module.getExportByName(<span class="literal">null</span>, <span class="string">'$s10Foundation4DataV19_bridgeToObjectiveCSo6NSDataCyF'</span>);</span><br><span class="line"><span class="comment">//生成函数指针用于调用</span></span><br><span class="line">funcptr_data_bridgeToObjectiveC = <span class="keyword">new</span> NativeFunction(func_data2nsdata_ptr,<span class="string">'pointer'</span>, [<span class="string">'pointer'</span>, <span class="string">'pointer'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">//调用</span></span><br><span class="line"><span class="keyword">let</span> ret:NativePointer = funcptr_data_bridgeToObjectiveC(rangePtr, dataStoragePtr) <span class="keyword">as</span> NativePointer;</span><br><span class="line"><span class="keyword">let</span> ocret = <span class="keyword">new</span> ObjC.Object(ret); <span class="comment">// is __NSSwiftData: NSData</span></span><br><span class="line"><span class="comment">// 接下来可以直接调用OC的函数了，比如： ocret.length() ， ocret.bytes()</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="0x07-总结"><a href="#0x07-总结" class="headerlink" title="0x07. 总结"></a>0x07. 总结</h3><p>Swift为了与OC兼容，保留了部分动态性，同时，为了更高效的运行，充分利用了寄存器，能直接传递就不间接传递，以实现的复杂性来得到运行的高效性。当然对于逆向研究来说，这里面还有很多可以挖掘的地方，笔者在此仅尝试了一小部分且仍有瑕疵，欢迎大家留言交流学习。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="https://github.com/apple/swift/blob/master/docs/ABI/CallingConvention.rst" target="_blank" rel="noopener">Swift ABI</a></li>
+<li><a href="https://github.com/apple/swift-corelibs-foundation" target="_blank" rel="noopener">swift-corelibs-foundation</a></li>
+<li><a href="https://github.com/TannerJin/Swift-MemoryLayout" target="_blank" rel="noopener">Swift-MemoryLayout</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/%E6%8A%80%E6%9C%AF/" rel="tag"># 技术</a>
+            
+              <a href="/tags/iOS%E9%80%86%E5%90%91/" rel="tag"># iOS逆向</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/07/05/2020-07-05-SwiftDump/" rel="next" title="SwiftDump">
+                  <i class="fa fa-chevron-left"></i> SwiftDump
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    
+  <div class="comments" id="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-背景"><span class="nav-number">1.</span> <span class="nav-text">0x00 背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-测试环境"><span class="nav-number">2.</span> <span class="nav-text">0x01 测试环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-确认关键函数"><span class="nav-number">3.</span> <span class="nav-text">0x02 确认关键函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Alamofire-Get请求示例"><span class="nav-number">3.1.</span> <span class="nav-text">1. Alamofire Get请求示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Alamofire的实现分析"><span class="nav-number">3.2.</span> <span class="nav-text">2. Alamofire的实现分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-Foundation-Data的内存布局"><span class="nav-number">4.</span> <span class="nav-text">0x03. Foundation.Data的内存布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-Kill-SSL-Pinning"><span class="nav-number">5.</span> <span class="nav-text">0x04. Kill SSL Pinning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x05-Swift-String"><span class="nav-number">6.</span> <span class="nav-text">0x05. Swift String</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x06-One-More-Step"><span class="nav-number">7.</span> <span class="nav-text">0x06. One More Step</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x07-总结"><span class="nav-number">8.</span> <span class="nav-text">0x07. 总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">8.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">neilwu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">neilwu</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.1</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+  <script>
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=66468070";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.4.0.js"></script>
+
+<script src="/js/motion.js?v=7.4.0.js"></script>
+
+
+<script src="/js/schemes/pisces.js?v=7.4.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.4.0.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://neilwu123.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  function disqus_config() {
+    this.page.url = "https://neil-wu.github.io/2020/07/16/2020-07-16-FridaHookSwiftAlamofire/";
+    this.page.identifier = "2020/07/16/2020-07-16-FridaHookSwiftAlamofire/";
+    this.page.title = 'FridaHookSwiftAlamofire';};
+  function loadComments() {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://neilwu123.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  }
+    (function() {
+      var offsetTop = document.getElementById('comments').offsetTop - window.innerHeight;
+      if (offsetTop <= 0) {
+        // load directly when there's no a scrollbar
+        window.addEventListener('load', loadComments, false);
+      } else {
+        var disqus_scroll = () => {
+          // offsetTop may changes because of manually resizing browser window or lazy loading images.
+          var offsetTop = document.getElementById('comments').offsetTop - window.innerHeight;
+          var scrollTop = window.scrollY;
+
+          // pre-load comments a bit? (margin or anything else)
+          if (offsetTop - scrollTop < 60) {
+            window.removeEventListener('scroll', disqus_scroll);
+            loadComments();
+          }
+        };
+        window.addEventListener('scroll', disqus_scroll);
+      }
+    })();
+  
+</script>
+
+</body>
+</html>
